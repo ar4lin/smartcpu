@@ -1,10 +1,10 @@
 [package]
 name = "smartcpu"
-version = "0.1.0"
-edition = "2024"
+version = "0.1.1"
+edition = "2021"
 
 [dependencies]
-gtk4 = "0.10.1"
-glib = "0.21.3"
-notify-rust = "4.11.7"
-nix = "0.30.1"
+gtk4 = "0.10"
+glib = "0.21"
+notify-rust = "4.11"
+nix = { version = "0.30", features = ["user"] }

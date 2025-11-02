@@ -1,7 +1,7 @@
 use crate::cpu_ctrl;
 
 use gtk4::prelude::*;
-use gtk4::{Application, ApplicationWindow, CheckButton, ListBox, ListBoxRow, Orientation, Button, Settings};
+use gtk4::{Application, ApplicationWindow, CheckButton, ListBox, ListBoxRow, Orientation, Button, Settings, Label};
 
 pub fn run_app() {
     let app = Application::builder()
@@ -23,8 +23,12 @@ fn build_ui(app: &Application) {
     let enable_button = Button::with_label("Enable all");
     enable_button.connect_clicked(|_| cpu_ctrl::enable_all());
 
+    let disable_button = Button::with_label("Disable all");
+    disable_button.connect_clicked(|_| cpu_ctrl::disable_all());
+
     let buttons_box = gtk4::Box::new(Orientation::Horizontal, 5);
     buttons_box.append(&enable_button);
+    buttons_box.append(&disable_button);
 
     let threads = cpu_ctrl::get_cpu_threads_count();
 
@@ -36,12 +40,25 @@ fn build_ui(app: &Application) {
 
     for item in items {
         let checked = cpu_ctrl::is_thread_active(&item);
-        let checkbox = CheckButton::with_label(&item);
-        checkbox.set_active(checked);
-
+        
         let thread_num: i32 = item
         .parse()
         .expect("Incorrect thread number");
+        
+        // Get CPU info
+        let freq = cpu_ctrl::get_cpu_frequency(thread_num);
+        let governor = cpu_ctrl::get_cpu_governor(thread_num);
+        
+        // Create label with thread info
+        let label_text = if governor != "N/A" {
+            format!("Thread {} - {} - {}", item, freq, governor)
+        } else {
+            format!("Thread {} - {}", item, freq)
+        };
+        
+        let checkbox = CheckButton::with_label(&label_text);
+        checkbox.set_active(checked);
+
         let checkbox_clone = checkbox.clone();
 
         checkbox.connect_toggled(move |_| {
@@ -71,10 +88,10 @@ fn build_ui(app: &Application) {
     let window = ApplicationWindow::builder()
         .application(app)
         .title("Smart CPU")
-        .default_width(300)
-        .default_height(200)
+        .default_width(400)
+        .default_height(300)
         .child(&vbox)
-        .resizable(false)
+        .resizable(true)
         .build();
     window.set_icon_name(Some("cpu"));
     window.show();
